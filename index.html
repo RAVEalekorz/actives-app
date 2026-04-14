@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AssetTracker — Анализ и Учет</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --accent: #38bdf8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        input, button {
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            margin-top: 10px;
+        }
+
+        button {
+            background: var(--accent);
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .stock-info h2 { color: var(--accent); }
+        
+        .price-chart {
+            width: 100%;
+            height: 300px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .positive { color: #4ade80; }
+        .negative { color: #f87171; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>AssetTracker Pro</h1>
+        <p>Мониторинг активов в реальном времени</p>
+    </header>
+
+    <div class="dashboard">
+        <div class="card">
+            <h3>Добавить в портфель</h3>
+            <input type="text" id="tickerInput" placeholder="Тикер (напр. AAPL)">
+            <input type="number" id="amountInput" placeholder="Кол-во акций">
+            <button onclick="addToPortfolio()">Добавить</button>
+
+            <h4>Мои активы</h4>
+            <table id="portfolioTable">
+                <thead>
+                    <tr>
+                        <th>Тикер</th>
+                        <th>Кол-во</th>
+                        <th>Цена</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Анализ компании</h3>
+            <div class="stock-info" id="stockAnalysis">
+                <h2 id="compName">Выберите компанию</h2>
+                <p id="compDesc">Введите тикер для получения данных о бизнесе, дивидендах и графиках.</p>
+                
+                <canvas id="priceChart" class="price-chart"></canvas>
+
+                <div id="divCalendar" style="margin-top: 20px;">
+                    <strong>Ближайшие дивиденды:</strong> <span id="divDate">нет данных</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Инициализация графика
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    let myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн'],
+            datasets: [{
+                label: 'Цена акции ($)',
+                data: [150, 155, 148, 162, 159, 170],
+                borderColor: '#38bdf8',
+                tension: 0.3
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    async function addToPortfolio() {
+        const ticker = document.getElementById('tickerInput').value.toUpperCase();
+        const amount = document.getElementById('amountInput').value;
+
+        if(!ticker || !amount) return alert("Заполните поля");
+
+        // В реальном приложении здесь был бы запрос к API (напр. Finnhub или Yahoo)
+        // Для демонстрации используем заглушки
+        const mockPrice = (Math.random() * 200 + 50).toFixed(2);
+        
+        const table = document.getElementById('portfolioTable').getElementsByTagName('tbody')[0];
+        const row = table.insertRow();
+        row.innerHTML = `<td>${ticker}</td><td>${amount}</td><td class="positive">$${mockPrice}</td>`;
+
+        updateAnalysis(ticker);
+    }
+
+    function updateAnalysis(ticker) {
+        // Имитация получения данных
+        document.getElementById('compName').innerText = ticker + " Inc.";
+        document.getElementById('compDesc').innerText = `Компания ${ticker} является лидером в своем секторе, занимаясь инновационными разработками и расширением рынков сбыта.`;
+        document.getElementById('divDate').innerText = "15.07.2024 ($0.25)";
+        
+        // Обновление графика случайными данными
+        myChart.data.datasets[0].data = Array.from({length: 6}, () => Math.floor(Math.random() * 100) + 100);
+        myChart.update();
+    }
+</script>
+
+</body>
+</html>
