@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Terminal | GitHub Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=JetBrains+Mono&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #F5F5DC;
+            --paper-color: #FFFFF0;
+            --primary: #556B2F; 
+            --secondary: #708090; 
+            --accent-red: #8B4513; 
+            --text-main: #2F4F4F;
+            --border-color: #D2B48C;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--paper-color);
+            padding: 40px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        header {
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .grid-main {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        /* Таблицы */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th { text-align: left; padding: 12px; border-bottom: 2px solid var(--primary); font-size: 11px; text-transform: uppercase; color: var(--secondary); }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .numeric { font-family: 'JetBrains Mono', monospace; }
+
+        /* Карточки компаний */
+        .company-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            background: rgba(85, 107, 47, 0.03);
+        }
+
+        .card-header { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--primary); margin-bottom: 5px; }
+        .card-sector { font-size: 10px; text-transform: uppercase; color: var(--secondary); letter-spacing: 1px; }
+        .card-desc { font-size: 12px; margin-top: 10px; color: #555; height: 40px; overflow: hidden; }
+
+        /* Мини-график (имитация) */
+        .sparkline {
+            width: 100px;
+            height: 20px;
+            background: linear-gradient(90deg, transparent 50%, rgba(85, 107, 47, 0.1) 50%);
+            background-size: 10px 100%;
+            border-bottom: 1px solid var(--primary);
+            position: relative;
+        }
+
+        .controls { background: var(--paper-color); padding: 20px; border: 1px solid var(--border-color); position: sticky; top: 20px; }
+        input, select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--border-color); background: transparent; }
+        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; cursor: pointer; text-transform: uppercase; font-weight: bold; }
+
+        .dividend-calendar { margin-top: 40px; padding: 20px; border: 1px double var(--border-color); }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1 style="font-family: 'Playfair Display'; text-transform: uppercase;">Money Terminal</h1>
+            <p style="font-size: 12px;">Investment Ledger & Dividend Tracker</p>
+        </div>
+        <div id="stats-summary" class="numeric">
+            Portfolio: <span id="total-val">0 ₽</span>
+        </div>
+    </header>
+
+    <div class="grid-main">
+        <main>
+            <section>
+                <h3>Активные позиции</h3>
+                <table id="portfolio-table">
+                    <thead>
+                        <tr>
+                            <th>Тикер</th>
+                            <th>График</th>
+                            <th>Кол-во</th>
+                            <th>Вход</th>
+                            <th>Тек. Цена</th>
+                            <th>Доход (Net)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="dividend-calendar">
+                <h3 style="font-family: 'Playfair Display'; margin-bottom: 15px;">📅 Календарь дивидендов</h3>
+                <table id="div-table">
+                    <thead>
+                        <tr>
+                            <th>Компания</th>
+                            <th>Дата отсечки</th>
+                            <th>На акцию</th>
+                            <th>Итого (к получению)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin-top: 30px;">Аналитика эмитентов</h3>
+                <div id="company-cards" class="company-info"></div>
+            </section>
+        </main>
+
+        <aside>
+            <div class="controls">
+                <label>Добавить актив</label>
+                <input type="text" id="t-ticker" placeholder="Тикер (SBER, LKOH...)">
+                <input type="number" id="t-qty" placeholder="Количество">
+                <input type="number" id="t-price" placeholder="Цена покупки">
+                <input type="number" id="t-curr" placeholder="Текущая цена">
+                <button onclick="addPosition()">Добавить в портфель</button>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<script>
+    // База знаний о компаниях
+    const directory = {
+        'SBER': { name: 'Сбербанк', sector: 'Financials', desc: 'Крупнейший банк России и экосистема технологий.', div: 33.3, date: '11.07.2026' },
+        'LKOH': { name: 'Лукойл', sector: 'Energy', desc: 'Одна из крупнейших вертикально интегрированных нефтегазовых компаний.', div: 575, date: '18.12.2026' },
+        'GAZP': { name: 'Газпром', sector: 'Energy', desc: 'Мировой лидер по запасам и добыче природного газа.', div: 15.5, date: '14.07.2026' },
+        'NVTK': { name: 'Новатэк', sector: 'Energy', desc: 'Крупнейший независимый производитель природного газа в России.', div: 44.1, date: '09.10.2026' }
+    };
+
+    let positions = JSON.parse(localStorage.getItem('gh-money-pos')) || [];
+
+    function addPosition() {
+        const tick = document.getElementById('t-ticker').value.toUpperCase();
+        const pos = {
+            ticker: tick,
+            qty: parseFloat(document.getElementById('t-qty').value),
+            price: parseFloat(document.getElementById('t-price').value),
+            curr: parseFloat(document.getElementById('t-curr').value),
+            id: Date.now()
+        };
+        positions.push(pos);
+        save();
+    }
+
+    function save() {
+        localStorage.setItem('gh-money-pos', JSON.stringify(positions));
+        render();
+    }
+
+    function render() {
+        const tbody = document.querySelector('#portfolio-table tbody');
+        const divBody = document.querySelector('#div-table tbody');
+        const cardBox = document.getElementById('company-cards');
+        
+        tbody.innerHTML = '';
+        divBody.innerHTML = '';
+        cardBox.innerHTML = '';
+        
+        let total = 0;
+
+        positions.forEach(p => {
+            const info = directory[p.ticker] || { name: p.ticker, sector: 'Other', desc: 'Данные не найдены', div: 0, date: '-' };
+            const profit = (p.curr - p.price) * p.qty * 0.87;
+            total += (p.qty * p.curr);
+
+            // Портфель
+            tbody.innerHTML += `
+                <tr>
+                    <td><b>${p.ticker}</b></td>
+                    <td><div class="sparkline"></div></td>
+                    <td class="numeric">${p.qty}</td>
+                    <td class="numeric">${p.price}</td>
+                    <td class="numeric">${p.curr}</td>
+                    <td class="numeric" style="color:${profit>=0?'var(--primary)':'var(--accent-red)'}">${profit.toFixed(2)} ₽</td>
+                </tr>
+            `;
+
+            // Дивиденды
+            if(info.div > 0) {
+                divBody.innerHTML += `
+                    <tr>
+                        <td>${info.name}</td>
+                        <td>${info.date}</td>
+                        <td class="numeric">${info.div} ₽</td>
+                        <td class="numeric"><b>${(info.div * p.qty * 0.87).toFixed(2)} ₽</b></td>
+                    </tr>
+                `;
+            }
+
+            // Карточки
+            cardBox.innerHTML += `
+                <div class="card">
+                    <div class="card-sector">${info.sector}</div>
+                    <div class="card-header">${info.name}</div>
+                    <div class="card-desc">${info.desc}</div>
+                </div>
+            `;
+        });
+
+        document.getElementById('total-val').innerText = total.toLocaleString() + ' ₽';
+    }
+
+    render();
+</script>
+</body>
+</html>
